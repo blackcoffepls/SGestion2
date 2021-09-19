@@ -1,0 +1,53 @@
+{% extends 'layout-cliente.html' %}
+
+{% block content %}
+
+
+
+<div class="productos-grid">
+    {%for item in items %}
+    <div class="producto {{item.categoria}}">
+      {% if item.stock <= 0%}
+      <div class="sin-stock">
+        <div class="sin-stock-tag">Sin Stock</div>
+      </div>
+      {% endif %}
+      <div class="img-container">
+        <img class="img" src="../static/media/productos/{{item.imagen}}">
+        {% if item.oferta!=0 %}
+        <div class="descuento">
+          <span>{{item.oferta}}</span>
+          <span class="off">OFF</span>
+        </div>
+        {% endif %}
+      </div>
+      
+
+      <div class="info">
+        <div class="titulo">{{item.nombre}}</div>
+        <div class="precio">
+          {% if item.oferta ==0 %}
+          <span>${{item.precio}}</span>
+          {% else %}
+          <span class="precioanterior">${{item.precio}}</span>
+          <span>${{item.precioFinal}}</span>      
+          {% endif %}
+        </div>
+        <div class="cantidades">
+        <form action="/carrito/add" method="POST">
+          <div class="number-input">
+            <button type="button"  onclick="this.parentNode.querySelector('input[type=number]').stepDown()" ></button>
+            <input class="quantity bg-light" min="1" max="{{item.stock}}" name="cantidad" value="1" type="number">
+            <button type="button" onclick="this.parentNode.querySelector('input[type=number]').stepUp()" class="plus"></button>
+          </div> </br>
+          <button class="boton-agregar" type="submit">AGREGAR</button>
+          <input type="hidden" name="indice" value="{{item.id}}">
+          <input type="hidden" name="tipo" value="producto">
+        </form>
+      </div>
+      </div>
+    </div>
+    {%endfor%}
+ </div>
+
+{% endblock content %}

@@ -1,0 +1,298 @@
+{% extends 'layout-admin.html' %}
+{% block content %}
+
+
+<div class="contenido">
+
+      <button id="show">Agregar Combo</button>
+
+      <div class="formulario-combo n-combo" hidden>
+
+         <form method="post" action="/panel/combos/agregar" enctype="multipart/form-data">
+
+         <span>Imagen</span>
+         <span>Nombre</span>
+         <span>Productos</span>
+         <span>Precio</span>
+         <span></span>
+
+         <input type="file" accept=".jpg, .jpeg, .png" name="n-image" required="required" >
+
+         <input class="texto" type="text" name="nombre" required="required">
+
+           <select name="productos"  class="selectpicker" data-live-search="true" multiple required="required">
+            {% for item in productos %}
+                  <option value={{item.id}}>{{item.nombre}}</option>
+              {% endfor %}
+           </select>
+
+
+         <input type="number" name="precio" step="0.01" min="0" required="required">
+         <input type="hidden" name="hidden_skills" id="hidden_skills" />
+         <input type="submit" name="submit" class="" value="Agregar" />
+
+          </form>
+
+      </div>
+
+      <table id="combos" hidden="hidden" class="display" style="width:100%;">
+        <thead>
+            <tr>
+               <th>ID (stock)</th>
+                <th>Imagen</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Productos</th>
+                <th>Eliminar</th>
+            </tr>
+        </thead>
+        <tbody>
+         {%for i in combos %}
+         <tr>
+           <td style="max-width: 50px !important;">{{i.id}} ({{i.stock}})</td>
+           <td>
+              <div class="imagen">
+                  <div><img class="img" src="../static/media/productos/{{i.imagen}}"></div>
+               <div> 
+               <form action="/panel/combos/modifica" method="POST" enctype="multipart/form-data">
+                  <label for="file{{i.id}}">Modificar</label>
+                  <input onchange="this.form.submit();" type="file" id="file{{i.id}}" style="display: none;" accept=".jpg, .jpeg, .png" name="n-image">
+                  <input type="hidden" name="indice" value="{{i.id}}">
+                  <input type="hidden" name="tipo" value="cambiaimagen">
+               </form>
+               </div>
+            </div>
+           </td>
+           <td>
+               <span hidden>{{i.nombre}}</span>
+              <form action="/panel/combos/modifica" method="POST">
+               <input type="text" name="nombre" value="{{i.nombre}}">
+               <input type="hidden" name="indice" value="{{i.id}}">
+               <input type="hidden" name="tipo" value="cambianombre">
+               </form>
+           </td>
+           <td>
+             <span hidden>{{i.precioFinal}}</span>
+            <form action="/panel/combos/modifica" method="POST">
+               <nobr><label for="precio"><b>$</b></label>
+               <input type="number" name="precio" value="{{i.precioFinal}}" step="0.01" min="0" style="width:75px"></nobr>
+               <input type="hidden" name="indice" value="{{i.id}}">
+               <input type="hidden" name="tipo" value="cambiaprecio">
+               </form>
+           </td>
+
+           <td style="text-align: left">
+              <div class="productos" >
+                  {%  for j in info[i.id] %}
+                  <div>
+
+                  <form method="POST" action="/panel/combos/modifica">
+                    <input type="number" min="1" name="cantidad" value="{{ j.cantidad }}" style="width: 40px;">
+                    <input type="hidden" name="idproducto" value="{{ j.id }}">
+                    <input type="hidden" name="indice" value="{{i.id}}">
+                  <input type="hidden" name="tipo" value="cambiastock">
+                    </form>
+
+                    <form method="POST" action="/panel/combos/modifica">
+                     {% if info[i.id][0] != info[i.id][-1] %}
+                        <button type="submit" name="idproducto" value="{{ j.id }}"><i class="bi bi-x-circle-fill" style="color: red;"></i></button>
+                     {% endif %}
+
+                    <input type="hidden" name="indice" value="{{i.id}}">
+                     <input type="hidden" name="tipo" value="eliminaproducto">
+                    </form>
+
+                    {% if prod[j.id|int]!=None %}
+                     <nobr>{{prod[(j.id | int)].nombre}}
+                     ({{prod[(j.id | int)].stock}})
+
+                     {% if prod[(j.id | int)].stock< j.cantidad%}
+                     <i class="bi bi-exclamation-circle-fill" style="color:red;"></i>
+                     {% else %}
+                     <i class="bi bi-check-circle-fill" style="color: green;"></i>
+                     {% endif %}
+
+                  </nobr>               
+                    {% else %}
+                    <span>Producto Eliminado</span>
+                    {% endif %}
+                      
+                   </div>
+                    
+                  {% endfor %}
+                  
+               </div>
+
+               <div>
+                 <button type="button" class="agregar-producto" data-id="{{i.id}}">
+                 Agregar Producto
+                  </button>
+               </div>
+
+           </td>
+           <td>
+              <div class="eliminar">
+               <form method="POST" action="/panel/combos/modifica">
+                  <button type="submit">X</button>
+                  <input type="hidden" name="indice" value="{{i.id}}">
+                  <input type="hidden" name="tipo" value="eliminar">
+               </form>
+            </div>
+           </td>
+           {% endfor %}
+         </tr>
+        </tbody>
+    </table>
+</div>
+ 
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Elige que producto agregar</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+        <table id="productos" hidden="hidden" class="display" style="width:100%;">
+
+         <thead>
+            <tr>
+                <th>Imagen</th>
+                <th>Nombre</th>
+                <th>Añadir</th>
+            </tr>
+        </thead>
+
+        <tbody>
+           {%for i in productos %}
+           <tr>
+            <td>
+               <div class="imagen"><img class="img" src="../static/media/productos/{{i.imagen}}"></div>
+            </td>
+            <td>{{i.nombre}}</td>
+            <td>
+               <form method="POST" action="/panel/combos/modifica">
+                  <button type="submit" class="" name="idproducto" value="{{i.id}}">Agregar</button>
+                  <input hidden class="idpedido" name="indice" value="">
+                  <input type="hidden" name="tipo" value="agrega_producto">
+               </form>
+            </td>
+              
+           </tr>
+           {%endfor%}
+        </tbody>
+           
+        </table>
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="" data-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+<script src="//cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.js"></script>
+
+<script>
+    if ( window.history.replaceState ) {
+        window.history.replaceState( null, null, window.location.href );
+    }
+</script>
+
+<script>
+$(document).ready(function(){
+
+    $('#show').click(function() {
+      $('.n-combo').toggle(200);  
+    });
+});
+</script>
+
+<script type="text/javascript">
+   $(".agregar-producto").click(function () {
+    var ids = $(this).attr('data-id');
+    $(".idpedido").val( ids );
+    $('#myModal').modal('show');
+});
+</script>
+
+
+<script type="text/javascript">
+   $(document).ready(function() {
+    $('#combos').DataTable({
+      responsive: true,
+      bProcessing: true,
+      stateSave: true,
+      stateDuration: 60,
+      order: [[0, 'desc']],
+      columnDefs: [
+      {orderable: false, targets: [1,4,5]}
+      ],
+      language: {
+         search: 'Buscar:',
+         zeroRecords: 'No se encontraron registros.',
+         lengthMenu: "Mostrar _MENU_ registros",
+         infoEmpty: "Mostrando registros del 0 al 0 de un total de 0 registros",
+         infoFiltered: "(filtrado de un total de _MAX_ registros)",
+         info: "Mostrando de _START_ a _END_ de _TOTAL_ registros",
+         paginate: {
+              first: "Primero",
+              last: "Último",
+              next: "Siguiente",
+              previous: "Anterior"
+          },
+      },
+
+      "initComplete": function(settings, json) {
+     $('#combos').show();
+     }
+
+    });
+} );
+</script>
+
+<script type="text/javascript">
+   $(document).ready(function() {
+    $('#productos').DataTable({
+      responsive: true,
+      bProcessing: true,
+      scrollY: "500px",
+      scrollCollapse: true,
+      paging: false,
+      language: {
+         search: 'Buscar:',
+         zeroRecords: 'No se encontraron registros.',
+         lengthMenu: "Mostrar _MENU_ registros",
+         infoEmpty: "Mostrando registros del 0 al 0 de un total de 0 registros",
+         infoFiltered: "(filtrado de un total de _MAX_ registros)",
+         info: "Mostrando de _START_ a _END_ de _TOTAL_ registros",
+         paginate: {
+              first: "Primero",
+              last: "Último",
+              next: "Siguiente",
+              previous: "Anterior"
+          },
+      },
+
+      "initComplete": function(settings, json) {
+     $('#productos').show();
+     }
+
+    });
+} );
+</script>
+
+
+
+{% endblock content %}

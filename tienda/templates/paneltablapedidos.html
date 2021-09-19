@@ -1,0 +1,280 @@
+{% extends 'layout-admin.html' %}
+{% block content %}
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="myModal">¡Cuidado!</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+      <p>Si cancelas el pedido se reintegraran los productos al stock y no habrá vuelta atrás</p>
+        
+      </div>
+      <div class="modal-footer">
+
+  
+		<form method="POST" action="/panel/pedidos/estadoenvio" style="margin-top: 5px;">
+		
+			<button type="submit" class="btn btn-danger">Cancelar Pedido</button>
+			<input type="hidden" name="estadoenvio" value="Cancelado">
+			<input type="hidden" class="indice" name="indice" value="">
+		    <button type="button" class="btn btn-warning" data-dismiss="modal">Cerrar</button>   		
+		</form>
+  
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="contenido">
+
+	<table id="pedidos" hidden="hidden" class="display" style="width:100%;">
+        <thead>
+            <tr>
+            	<th>ID</th>
+                <th>Datos</th>
+                <th>Productos</th>
+                <th>Hora Pedido</th>
+                <th>Estado</th>
+                <th>Pago</th>
+                <th>Chofer</th>
+                <th>Acción</th>
+                <th>Comentarios</th>   
+            </tr>
+        </thead>
+        <tbody>
+        	{%for i in data %}
+           <tr>
+           	<td>({{i.id}})</td>
+
+           	<td>
+           		<div class="datos">
+           			<span><i class='bx bxs-face'></i> {{i.nombre}}</span>
+           			<span><i class="bi bi-whatsapp"></i> {{i.telefono}}</span>
+           			<span><i class='bx bxs-envelope' ></i> {{i.email}}</span>
+           			<span><i class="bi bi-house-door-fill"></i> {{i.direccion}}</span>
+           		</div>
+           	</td>
+
+           	<td style="min-width: 200px;">
+           		<div class="productos">
+           			{%  for j in info[i.id] %}
+           			<div>
+           			  
+
+           			  {% if j.tipo=='combo' %}
+           			  	{% if comb[j.id|int]!=None %}
+           			  	<details>
+	           			  <summary style="display:flex; align-items: center;">{{ j.cantidad }} {{comb[(j.id | int)].nombre}} <i class='bx bx-list-plus' style="font-size: 18px; color: red;"></i></summary>
+
+	           			  <div style="margin: 1px solid black;">
+	           			  {% for x in infocombos[j.id|int] %}
+
+	           			  <div style="padding-left: 10px; text-decoration: underline;">{{x.cantidad}} {{prod[(x.id | int)].nombre}}</div>
+
+	           			  {% endfor %}
+	           			  </div>
+	           			  	   		
+	           			</details>	  
+
+
+	           			{% else %}
+	           			<span>Combo Eliminado</span>
+	           			{% endif %}	
+           			    
+           			  {% else %}
+
+           			  	{% if prod[j.id|int]!=None %}
+           			  		{{ j.cantidad }} {{prod[(j.id | int)].nombre}}	   			    
+           			  	{% else %}
+           			  	<span>Producto Eliminado</span>
+           			  	{% endif %}
+           			  {% endif %}
+           			  	 
+           			 </div>
+           			  
+           			{% endfor %}
+           			
+           		</div>
+           	</td>
+
+           	<td>
+           		{{i.fechaHoraPedido[:16]}}
+           	</td>
+
+           	<td>
+           		<span hidden="hidden">{{i.estado}}</span>
+
+
+           		{% if i.estado != 'Cancelado' %}
+           		<form method="POST" action="/panel/pedidos/estadoenvio">
+	           		<select name="estadoenvio" onchange="this.form.submit();">
+
+	           			<option type="text" value="{{i.estado}}">{{i.estado}}</option>
+
+	           			{% if i.estado != 'Enviando' %}
+	           				<option type="text" value="Enviando">Enviando</option>
+	           			{% endif %}
+
+	           			{% if i.estado != 'Entregado' %}
+	           				<option type="text" value="Entregado">Entregado</option>
+	           			{% endif %}  			
+	           			
+	           		</select> 
+
+	           		<input type="hidden" name="indice" value="{{i.id}}">
+           		</form>
+
+           		{% if i.estado != 'Cancelado' %}          		
+           		<button type="button" data-toggle="modal" data-target="#myModal" class="cancelar-pedido btn btn-primary" data-id="{{i.id}}" style="margin-top: 5px;">Cancelar</button>
+
+
+           		{% endif %} 
+
+
+           		{% else %}
+           		<span>Cancelado</span>
+
+           		{% endif %}
+
+
+           	</td>
+
+           	<td class="datos-pago">
+           		<div>Medio de Pago:</br> {{i.formaPago}}</div>
+           		<div>
+           			<form method="POST" action="/panel/pedidos/estadopago">
+           			<select name="estadopago" onchange="this.form.submit();">
+
+           				<option type="text" value="{{i.estadoPago}}">{{i.estadoPago}}</option>
+
+           				{% if i.estadoPago != 'En espera' %}
+	           				<option type="text" value="En espera">En espera</option>
+	           			{% endif %}
+
+						{% if i.estadoPago != 'Pagado' %}
+	           			<option type="text" value="Pagado">Pagado</option>
+						{% endif %}
+
+						{% if i.estadoPago != 'Cancelado' %}
+	           			<option type="text" value="Cancelado">Cancelado</option>
+	           			{% endif %}
+
+           			</select>
+           			<input type="hidden" name="indice" value="{{i.id}}">
+           		</form>
+           		</div>
+           		<div>Total: ${{i.costo}}</div>
+           	</td>
+
+           	<td>
+           		<form method="POST" action="/panel/pedidos/chofer">
+           			<select name="chofer" onchange="this.form.submit();">
+           				{% if i.chofer != None %} <!-- si el chofer ya esta elegido, hay que mostrarlo como seleccionado -->
+	           				<!-- muestra el primer chofer como el chofer elegido -->
+		           			{% for j in choferes %}
+			           			{% if i.chofer == j.id %}
+			           				<option value="{{j.id}}" >{{j.nombre}}</option>
+			           			{% endif %}
+		           			{% endfor %}
+
+
+		           			<!-- muestra el resto de choferes -->
+		           			{% for j in choferes %}
+			           			{% if i.chofer != j.id %}
+			           				<option value="{{j.id}}">{{j.nombre}}</option>
+			           			{% endif %}
+		           			{% endfor %}
+
+		           		{% else %} <!-- si no hay chofer elegido, muestra "elegir" -->
+		           			<option value="None">Elegir</option>
+		           			{% for j in choferes %}
+			           			<option value="{{j.id}}">{{j.nombre}}</option>
+		           			{% endfor %}
+	           			{% endif %}
+           			</select>
+           			<input type="hidden" name="indice" value="{{i.id}}">
+           		</form>
+           		
+           	</td>
+
+           	
+           	<td>
+           		<a target="_blank" href="whatsapp://send?phone={{i.telefono}}&text=Hola%20{{i.nombre}}%20recibimos tu pedido ID: {{i.id}}."><button><i class="bi bi-check-circle-fill" style="color: green;"></i></button></a>
+           		<a target="_blank" href="whatsapp://send?phone=5492235062720&text=Hola%20{{i.nombre}}%20por x razon no podemos concretar tu compra."><button><i class="bi bi-x-circle-fill" style="color: red;"></i></button></a>
+           	</td>
+
+           	<td>
+           		<div style="max-width: 200px; font-size: 13px; font-weight: normal;">{{i.descripcion}}</div>
+           	</td>
+           </tr>
+           {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+<script src="//cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.js"></script>
+
+
+
+<script>
+    if ( window.history.replaceState ) {
+        window.history.replaceState( null, null, window.location.href );
+    }
+</script>
+
+<script type="text/javascript">
+   $(".cancelar-pedido").click(function () {
+    var ids = $(this).attr('data-id');
+    $(".indice").val( ids );
+});
+</script>
+
+
+<script type="text/javascript">
+	$(document).ready(function() {
+    $('#pedidos').DataTable({
+    	responsive: true,
+		bProcessing: true,
+		stateSave: true,
+		stateDuration: 60,
+		order: [[3, 'desc']],
+		columnDefs: [
+		{orderable: false, targets: [0,1,2,3,4,5,6,7,8]}
+		],
+		language: {
+			search: 'Buscar:',
+			zeroRecords: 'No se encontraron registros.',
+			lengthMenu: "Mostrar _MENU_ registros",
+			infoEmpty: "Mostrando registros del 0 al 0 de un total de 0 registros",
+    		infoFiltered: "(filtrado de un total de _MAX_ registros)",
+    		info: "Mostrando de _START_ a _END_ de _TOTAL_ registros",
+			paginate: {
+		        first: "Primero",
+		        last: "Último",
+		        next: "Siguiente",
+		        previous: "Anterior"
+		    },
+		},
+
+		"initComplete": function(settings, json) {
+     $('#pedidos').show();
+     },
+  });
+
+} );
+</script>
+
+{% endblock content %}

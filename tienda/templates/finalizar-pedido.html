@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Finalizar Compra</title>
+
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+  <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css">
+
+  <style type="text/css">
+  	.ingresa-datos {
+      padding: 10px;
+      padding-top: 100px;
+      margin: auto;
+      max-width: 550px;
+  	}
+
+    input {
+      width: 95%;
+      max-width: 325px;
+    }
+  </style>
+
+</head>
+<body>
+    <div class="container">
+
+      <div class="nav-up-container">
+        <div class="nav-up">
+        <div class="logo">LOGO</div>
+ 
+        </div>
+      </div>    
+    </div>
+
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category,messages in messages %}
+                <p>{{messages}}</p>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+<div class="ingresa-datos">
+  
+ <form action="/pedido" method="POST">
+
+  <div>
+    <span style="font-weight: bold;">Información del Comprador</span></br>
+    <span style="font-size: 13px;">(Buscaremos a esta persona al momento de entregar el pedido).</span></br>
+  <label for="nombre">🤠 Nombre Completo:</label>
+   <input type="text" name="nombre" required="required">
+   <br></br>
+  </div>
+
+  <div>
+    <span style="font-weight: bold;">Información de Contacto</span></br>
+    <span style="font-size: 13px;">(Nos comunicaremos por whatsapp para confimar tu pedido e informarte sobre el estado del envio).</span></br>
+  <label> 📞 Whatsaap: +</label>
+  <input type="number" name="cod-int" value="549" style="width: 50px;" required="required">
+  <input type="number" name="cod-area" value="223" style="width: 50px;" required="required">
+  <input type="number" name="telefono" placeholder="5123456" max="9999999" style="width: 100px;" required="required"><span style="font-size: 13px;">(Sin 15).</span></br>
+  <label for="email">📧 Email:</label>
+  <input type="email" name="email">
+  <br></br>
+ </div>
+
+ <div>
+    <span style="font-weight: bold;">Información de Envío</span></br>
+    <label>📫 Dirección de Entrega:</label>
+   <input type="text" name="direccion" required="required"></br>
+   <label for="comentarios">💬 Comentarios:</label>
+   <input type="text" name="comentarios" placeholder="Algun dato que facilite identificar el lugar de entrega.">
+   <br></br>
+ </div>
+
+<div>
+  <span style="font-weight: bold;">Información de Pago</span></br>
+   💸 <select name="mediopago" required="required">
+     <option>Efectivo</option>
+     <option value="MP">Mercado Pago (envio de dinero)</option>
+     <option value="TB">Transferencia Bancaria</option>
+   </select>
+   <br></br>
+</div>
+   🤝 <button type="submit">FINALIZAR COMPRA</button>
+ </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+
+  $(window).scroll(function() {
+    sessionStorage.scrollTop = $(this).scrollTop();
+  });
+
+  $(document).ready(function() {
+    if (sessionStorage.scrollTop != "undefined") {
+      $(window).scrollTop(sessionStorage.scrollTop);
+    }
+  });
+
+  $( document ).ready(function() {
+
+      $(".boton-carrito").on("click",function(){
+        if ($(".mostrar-carrito").hasClass('mostrar')) {
+            $(".mostrar-carrito").removeClass('mostrar');
+        } else {
+            $(".mostrar-carrito").addClass('mostrar');
+          };
+        });
+
+      $("#btnmenu").on("click",function(){
+        if ($(".nav-down").hasClass('mostrar')) {
+            $(".nav-down").removeClass('mostrar');
+            menuBtnChange();
+        } else {
+            $(".nav-down").addClass('mostrar');
+            menuBtnChange();
+          };
+
+
+      function menuBtnChange() {
+         if($(".nav-down").hasClass("mostrar")){
+           $("#btnmenu").addClass("bx-x-circle").removeClass("bx-menu");
+         } else {
+          $("#btnmenu").addClass("bx-menu").removeClass("bx-x-circle");
+         }
+        }
+      });
+
+  }); 
+
+</script>
+
+</body>
+</html>
